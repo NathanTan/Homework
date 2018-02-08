@@ -3,7 +3,9 @@ from random import randint
 import statistics
 import math
 
+#################### Globals ####################
 tileCount_g = 1
+
 
 def main():
    print("Welcome to the tiling problem")
@@ -28,17 +30,28 @@ def placeTiles(graph, width, height):
 
 
 def placeTile(graph, quadrant, width, height):
+   global tileCount_g
    tileCount = tileCount_g
    if tileCount == 1:
       xCord = width / 2
       yCord = height / 2
+      print("x:" + str(xCord) + " Y: " + str(yCord))
       if quadrant == 1:
-         print("x: " + str(xCord) + " y: " + str(yCord))
+         xCord = math.ceil(xCord)
+         yCord = math.floor(xCord)
+         graph[math.ceil(xCord)][math.floor(yCord)] = tileCount
+         graph[xCord][yCord - 1] = tileCount
+         graph[xCord - 1][yCord - 1] = tileCount
+         tileCount_g = tileCount_g + 1
+         printGraph(graph, width, height)
+         print("Tile cnt: " + str(tileCount_g))
+      elif quadrant == 2:
+         #print("x: " + str(xCord) + " y: " + str(yCord))
          graph[math.ceil(xCord)][math.floor(yCord)] = tileCount
          graph[math.floor(xCord)][math.floor(yCord)] = tileCount
          graph[math.floor(xCord)][math.ceil(yCord)] = tileCount
          tileCount_g = tileCount_g + 1
-
+         print("Tile cnt: " + str(tileCount_g))
    print("Quadrant: " + str(quadrant))
 
 
@@ -47,8 +60,6 @@ def getDeadQuadrant(graph, width, height):
 
    # Check x quadrant
    for x in range(4):
-      #   print("X: " + str(x))
-
       # If first quadrant
       if x == 1:
          rowRange = (0, (height / 2)) # (min, max)
@@ -79,13 +90,13 @@ def getDeadQuadrant(graph, width, height):
 # rangeMin can be as low as 0 and rangeMax should be 
 # the width - 1 maxium
 def quadrantIsDead(graph, rowRange, colRange):
-   #print("Ranges")
+    #print("Ranges")
    print(rowRange)
    print(colRange)
    for x in range(int(rowRange[0]), int(rowRange[1])):
-      for y in range(int(colRange[0]), int(colRange[1])):
-         if graph[x][y] != 0:
-            return True
+       for y in range(int(colRange[0]), int(colRange[1])):
+           if graph[x][y] != 0:
+              return True
    return False
 
 def initalizeDeadSpace(graph, width, height):
@@ -103,12 +114,12 @@ def createGraph(width, height):
    return graph
 
 def printGraph(graph, width, height):
-   for x in range(width):
-      for y in range(height):
-         print(graph[x][y], end=" ")
-      print("")
+    for x in range(width):
+        for y in range(height):
+           print(graph[x][y], end=" ")
+        print("")
 
 
 
 if __name__ == "__main__":
-   main()
+    main()
