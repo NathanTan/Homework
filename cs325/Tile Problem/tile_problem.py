@@ -32,14 +32,14 @@ def placeTiles(graph, width, height):
 def placeTile(graph, quadrant, width, height):
    global tileCount_g
    tileCount = tileCount_g
+   xCord = math.floor(width / 2)
+   yCord = math.floor(height / 2)
    if tileCount == 1:
-      xCord = width / 2
-      yCord = height / 2
       print("x:" + str(xCord) + " Y: " + str(yCord))
       if quadrant == 1:
          xCord = math.ceil(xCord)
          yCord = math.floor(xCord)
-         graph[math.ceil(xCord)][math.floor(yCord)] = tileCount
+         graph[xCord][yCord] = tileCount
          graph[xCord][yCord - 1] = tileCount
          graph[xCord - 1][yCord - 1] = tileCount
          tileCount_g = tileCount_g + 1
@@ -47,11 +47,19 @@ def placeTile(graph, quadrant, width, height):
          print("Tile cnt: " + str(tileCount_g))
       elif quadrant == 2:
          #print("x: " + str(xCord) + " y: " + str(yCord))
-         graph[math.ceil(xCord)][math.floor(yCord)] = tileCount
-         graph[math.floor(xCord)][math.floor(yCord)] = tileCount
-         graph[math.floor(xCord)][math.ceil(yCord)] = tileCount
+         graph[xCord - 1][yCord] = tileCount
+         graph[xCord][yCord - 1] = tileCount
+         graph[xCord][yCord] = tileCount
          tileCount_g = tileCount_g + 1
          print("Tile cnt: " + str(tileCount_g))
+      elif quadrant == 3:
+         graph[xCord][yCord] = tileCount
+         graph[xCord - 1][yCord] = tileCount
+         graph[xCord - 1][yCord - 1] = tileCount
+      elif quadrant == 4:
+         graph[xCord][yCord - 1] = tileCount
+         graph[xCord - 1][yCord] = tileCount
+         graph[xCord - 1][yCord - 1] = tileCount
    print("Quadrant: " + str(quadrant))
 
 
