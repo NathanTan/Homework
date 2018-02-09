@@ -1,5 +1,6 @@
 #!/bin/python3
 from random import randint
+import sys
 
 greaterThan = "Greater than"
 lessThan = "Less than"
@@ -55,7 +56,21 @@ def main():
     global greaterThan
     global lessThan
     global equal
-    print("In main")
+
+    if len(sys.argv) != 2:
+        print("Usage: python3 " + sys.argv[0] + " [Number of coins]") 
+        exit(1)
+
+    numOfCoins = int(sys.argv[1])
+    if (numOfCoins % 3) != 0:
+        print("Entered number of coins: " + str(numOfCoins))
+        print("Number of coins must be a factor of 3")
+        exit(1)
+
+
+    print("\n".join(sys.argv[1:]))
+
+    print("In main + Coins" + str(numOfCoins))
     x = CoinBag(9)
     c = Coin()
     c2 = Coin(5.0)
