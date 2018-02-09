@@ -1,6 +1,7 @@
 #!/bin/python3
 from random import randint
 import sys
+import math
 
 greaterThan = "Greater than"
 lessThan = "Less than"
@@ -13,7 +14,6 @@ class CoinBag:
     def __init__(self, n):
        self.length = n
        rand = randint(0, n - 1)
-       print("int: " + str(rand))
        for x in range(n):
            if x == rand:
                self.bag.append(Coin(1.2))
@@ -25,6 +25,7 @@ class CoinBag:
     # This function takes in 2 tuples and signals 
     # which range of coins weights more.
     def compareRange(self, range1, range2):
+        print("RANGE:" + str(range1) + " " + str(range2))
         global greaterThan
         global lessThan
         global equal
@@ -32,10 +33,16 @@ class CoinBag:
         high = 1
         weight1 = 0
         weight2 = 0
-        for x in range(int(range1[low]), int(range1[high])):
+
+        # Make sure we are doing at least 1 comparison
+        r1 = range(int(range1[low]), int(range1[high])) or [int(range1[low])]
+        r2 = range(int(range2[low]), int(range2[high])) or [int(range2[low])]
+        print("R1: " + str(r1))
+        
+        for x in r1:
             print("x1: " + str(x))
             weight1 = weight1 + self.bag[x].weight
-        for x in range(int(range2[low]), int(range2[high])):
+        for x in r2:
             print("x2: " + str(x))
             weight2 = weight2 + self.bag[x].weight
         print("Weight1: " + str(weight1))
@@ -87,9 +94,10 @@ def main():
         result = x.compareRange(range1, range2)
         print("Range1 is " + result + " to range2.")
 
+        #if coinRange == 1 and result != equal:
         if coinRange == 1 and result != equal:
             oddCoinIndex = searchStartIndex
-            print("exiting loop")
+            print("exiting loop\n\n")
             break
         elif coinRange < 3 and result == equal:
             print("                     Case 1")
@@ -97,7 +105,7 @@ def main():
         elif result == equal:
             print("                     Case 2")
             searchStartIndex = coinRange * 2
-            coinRange = coinRange / 3
+            coinRange = math.ceil(coinRange / 3)
         else:
             print("                     Case 3")
             coinRange = coinRange - 1
@@ -105,12 +113,26 @@ def main():
         numOfWeighs = numOfWeighs + 1
 
 
-    seachStartIndex = searchStartIndex - 1
-    result = x.compareRange((searchStartIndex, searchStartIndex), \
+    searchStartIndex = searchStartIndex - 1
+    print("Odd coin guess: " + str(oddCoinIndex))
+
+    print("\nNew start index:" + str(searchStartIndex))
+    if oddCoinIndex == 0: # Edge case
+        result = x.compareRange((1, 1), (2, 2))
+        if result != equal:
+            oddCoinIndex = 1
+        #oddCoinIndex = oddCoinIndex - 1 # Should be setting it to -1
+    else:
+        print("Comparing: " + str(searchStartIndex) + " and " + str(searchStartIndex + 1))
+        result = x.compareRange((searchStartIndex, searchStartIndex), \
             (searchStartIndex + 1, searchStartIndex + 1))
-    if result == equal:
+    print("Result: " + str(result))
+    if result == equal and oddCoinIndex == 0:
+        print("Odd coin index is " + str(oddCoinIndex))
+    elif result == equal:
         oddCoinIndex = oddCoinIndex + 1
         print("Odd coin index is " + str(oddCoinIndex))
+    
     else:
         print("Odd coin index is " + str(oddCoinIndex))
 
