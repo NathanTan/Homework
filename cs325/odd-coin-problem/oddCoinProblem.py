@@ -16,7 +16,7 @@ class CoinBag:
        rand = randint(0, n - 1)
        for x in range(n):
            if x == rand:
-               self.bag.append(Coin(1.2))
+               self.bag.append(Coin(.8))
            else:
                self.bag.append(Coin())
     def printBag(self):
@@ -129,12 +129,24 @@ def main():
     print("Result: " + str(result))
     if result == equal and oddCoinIndex == 0:
         print("Odd coin index is " + str(oddCoinIndex))
+        determineCoinWeight(x.compareRange((0,0), (1,1)))
     elif result == equal:
         oddCoinIndex = oddCoinIndex + 1
         print("Odd coin index is " + str(oddCoinIndex))
+        determineCoinWeight(x.compareRange((oddCoinIndex, oddCoinIndex), (0,0)))
     
     else:
         print("Odd coin index is " + str(oddCoinIndex))
+        determineCoinWeight(x.compareRange((oddCoinIndex, oddCoinIndex), (0,0)))
+    
+    return 0 # Exit program
+
+def determineCoinWeight(result):
+    if result == lessThan:
+        result = "lighter than "
+    else:
+        result = "heavier than "
+    print("The odd coin is " + result + "the other coins")
 
 
 
