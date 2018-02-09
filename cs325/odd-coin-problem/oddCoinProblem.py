@@ -21,7 +21,7 @@ class CoinBag:
                self.bag.append(Coin())
     def printBag(self):
         for x in range(self.length):
-            print(self.bag[x].weight)
+            print("   bag[" + str(int(x)) + "]: " + str(self.bag[x].weight))
     # This function takes in 2 tuples and signals 
     # which range of coins weights more.
     def compareRange(self, range1, range2):
@@ -32,9 +32,11 @@ class CoinBag:
         high = 1
         weight1 = 0
         weight2 = 0
-        for x in range(range1[low], range1[high]):
+        for x in range(int(range1[low]), int(range1[high])):
+            print("x1: " + str(x))
             weight1 = weight1 + self.bag[x].weight
-        for x in range(range2[low], range2[high]):
+        for x in range(int(range2[low]), int(range2[high])):
+            print("x2: " + str(x))
             weight2 = weight2 + self.bag[x].weight
         print("Weight1: " + str(weight1))
         print("Weight2: " + str(weight2))
@@ -67,16 +69,52 @@ def main():
         print("Number of coins must be a factor of 3")
         exit(1)
 
+    # Start the search for the odd coin
+    coinRange = numOfCoins / 3
+    coinFound = False
+    searchStartIndex = 0
+    numOfWeighs = 0
+    oddCoinIndex = -1
 
-    print("\n".join(sys.argv[1:]))
+    while coinFound == False:
+        print("Coin range: " + str(coinRange))
+        range1 = (searchStartIndex, int(coinRange + searchStartIndex))
+        range2 = (int(coinRange + searchStartIndex), int(coinRange + coinRange + searchStartIndex))
+        print("Range1: " + str(range1))
+        print("Range2: " + str(range2))
+        x = CoinBag(numOfCoins)
+        x.printBag()
+        result = x.compareRange(range1, range2)
+        print("Range1 is " + result + " to range2.")
 
-    print("In main + Coins" + str(numOfCoins))
-    x = CoinBag(9)
-    c = Coin()
-    c2 = Coin(5.0)
-    x.printBag()
-    result = x.compareRange((0, 4), (4, 9))
-    print("Range1 is " + result + " to range2.")
+        if coinRange == 1 and result != equal:
+            oddCoinIndex = searchStartIndex
+            print("exiting loop")
+            break
+        elif coinRange < 3 and result == equal:
+            print("                     Case 1")
+            searchStartIndex = searchStartIndex + 1
+        elif result == equal:
+            print("                     Case 2")
+            searchStartIndex = coinRange * 2
+            coinRange = coinRange / 3
+        else:
+            print("                     Case 3")
+            coinRange = coinRange - 1
+            pass
+        numOfWeighs = numOfWeighs + 1
+
+
+    seachStartIndex = searchStartIndex - 1
+    result = x.compareRange((searchStartIndex, searchStartIndex), \
+            (searchStartIndex + 1, searchStartIndex + 1))
+    if result == equal:
+        oddCoinIndex = oddCoinIndex + 1
+        print("Odd coin index is " + str(oddCoinIndex))
+    else:
+        print("Odd coin index is " + str(oddCoinIndex))
+
+
 
 if __name__ == "__main__":
     main()
