@@ -27,7 +27,7 @@ def main():
    initalizeDeadSpace(graph, width, height)
 
    placeTiles(graph, width, height)
-   #printGraph(graph, width, height)
+   printGraph(graph, width, height)
 
 
    offset = n - tileLevel
@@ -50,14 +50,34 @@ def placeTiles(graph, width, height):
    printGraph(graph, width, height)
    
    # 2nd quadrant tile drop
+
+   offset = n - 0
+   if (width / 2) < 2 or (height / 2) < 2:
+       return None
+
+   width = width / 2
+   height = height / 2
+   #if tileCount_g == 5:
+   #    printGraph(graph, (2**n), (2**n))
+   #    exit(0)
+   print("width: " + str(width / 2) + "\nheight: " + str(height / 2))
+   placeTiles(graph, width, height)
+   printGraph(graph, (2**n), (2**n))
+   placeTiles(graph, width + 2, height)
+   placeTiles(graph, width, height + 2)
+   placeTiles(graph, width + 2, height + 2)
+   
+   #print("width: " + str(width) + "\nheight: " + str(height / 2))
+   #placeTiles(graph, width / 2, height / 2)
+
    tileLevel = 0
-   offset = n - tileLevel
-   print("N: " + str(n))
-   print("Offset: " + str(offset))
-   quadrant = getDeadQuadrant(graph, width - offset, height - offset)
-   placeTile(graph, quadrant, width - offset, height - offset)
-   printGraph(graph, width, height)
-   tileCount_g = tileCount_g + 1
+   #offset = n - tileLevel
+   #print("N: " + str(n))
+   #print("Offset: " + str(offset))
+   #quadrant = getDeadQuadrant(graph, width - offset, height - offset)
+   #placeTile(graph, quadrant, width - offset, height - offset)
+   #printGraph(graph, width, height)
+   #tileCount_g = tileCount_g + 1
 
 
 def placeTile(graph, quadrant, width, height):
@@ -112,9 +132,6 @@ def getDeadQuadrant(graph, width, height):
       elif x == 2:
          rowRange = (0, (height / 2)) # (min, max)
          colRange = (0, (width / 2))
-         print("RC:")
-         print(str(rowRange))
-         print(str(colRange))
          if quadrantIsDead(graph, rowRange, colRange):
             return 2
       elif x == 3:
@@ -160,8 +177,8 @@ def createGraph(width, height):
    return graph
 
 def printGraph(graph, width, height):
-    for x in range(width):
-        for y in range(height):
+    for x in range(int(width)):
+        for y in range(int(height)):
            print(graph[x][y], end=" ")
         print("")
 
