@@ -51,11 +51,13 @@ def placeTiles(graph, width, height):
    tileLevel = 1
    offset = n - tileLevel
    print("Offset: " + str(offset))
-   quadrant = getDeadQuadrant(graph, width - offset, height - offset)
+   #quadrant = getDeadQuadrant(graph, width, height)
+   quadrant = getDeadQuadrant(graph, width - 2, height - 2)
    print("QUADRANT: " + str(quadrant))
-   placeTile(graph, quadrant, width - offset, height - offset)
-   tileCount_g = tileCount_g + 1
+   #placeTile(graph, quadrant, width , height)
+   placeTile(graph, quadrant, width - 2, height - 2)
    printGraph(graph, width, height)
+   tileCount_g = tileCount_g + 1
 
 
 def placeTile(graph, quadrant, width, height):
@@ -70,30 +72,33 @@ def placeTile(graph, quadrant, width, height):
          graph[xCord][yCord] = tileCount_g
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
-         tileCount_g = tileCount_g + 1
+         #tileCount_g = tileCount_g + 1
          printGraph(graph, int(width), int(height))
-         print("Tile cnt: " + str(tileCount_g))
+         #print("Tile cnt: " + str(tileCount_g))
       elif quadrant == 2:
          #print("x: " + str(xCord) + " y: " + str(yCord))
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord][yCord] = tileCount_g
-         tileCount_g = tileCount_g + 1
-         print("Tile cnt: " + str(tileCount_g))
+         printGraph(graph, int(width), int(height))
+         #tileCount_g = tileCount_g + 1
+         #print("Tile cnt: " + str(tileCount_g))
       elif quadrant == 3:
          graph[xCord][yCord] = tileCount_g
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
+         printGraph(graph, int(width), int(height))
       elif quadrant == 4:
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
+         printGraph(graph, int(width), int(height))
 #   print("Quadrant: " + str(quadrant))
    print("TILE COUNT: " + str(tileCount_g))
 
 def getDeadQuadrant(graph, width, height):
    x = -1
-
+   print("width: " + str(width) + "\nheight: " + str(height))
 
    # Check x quadrant
    for x in range(4):
@@ -107,6 +112,9 @@ def getDeadQuadrant(graph, width, height):
       elif x == 2:
          rowRange = (0, (height / 2)) # (min, max)
          colRange = (0, (width / 2))
+         print("RC:")
+         print(str(rowRange))
+         print(str(colRange))
          if quadrantIsDead(graph, rowRange, colRange):
             return 2
       elif x == 3:
@@ -132,6 +140,7 @@ def quadrantIsDead(graph, rowRange, colRange):
    print(colRange)
    for x in range(int(rowRange[0]), int(rowRange[1])):
        for y in range(int(colRange[0]), int(colRange[1])):
+           print("Checking: graph[" + str(x) + "][" + str(y) + "]: " + str(graph[x][y]))
            if graph[x][y] != 0:
               return True
    return False
