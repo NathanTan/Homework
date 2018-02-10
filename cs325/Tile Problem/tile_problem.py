@@ -19,26 +19,26 @@ def main():
        print("Usage: python3 " + sys.argv[0] + " [Size of matrix]")
        exit(1)
    n = math.log(float(sys.argv[1]), 2)
-   height = int(sys.argv[1])
-   width = height
+   height = [0, int(sys.argv[1])]
+   width = [0, int(sys.argv[1])]
 
    offset = 0
-   graph = createGraph(width, height)
-   initalizeDeadSpace(graph, width, height)
+   graph = createGraph(width[1], height[1])
+   initalizeDeadSpace(graph, width[1], height[1])
 
    placeTiles(graph, width, height)
-   printGraph(graph, width, height)
+   printGraph(graph)
 
-
-   offset = n - tileLevel
-#   placeTiles(graph, width, height, offset)
-#   printGraph(graph, width, height)
 
 def placeTiles(graph, width, height):
    global n
    global tileCount_g
    tileLevel = 0
    offset = 0
+   
+   # For accessing width/height tuple
+   minn = 0
+   maxx = 1
 
 
    # Inital tile drop
@@ -47,26 +47,28 @@ def placeTiles(graph, width, height):
    print("QUADRANT: " + str(quadrant))
    placeTile(graph, quadrant, width, height)
    tileCount_g = tileCount_g + 1
-   printGraph(graph, width, height)
+   printGraph(graph)
    
    # 2nd quadrant tile drop
 
    offset = n - 0
-   if (width / 2) < 2 or (height / 2) < 2:
+   if (width[maxx] / 2) < 2 or (height[maxx] / 2) < 2:
        return None
 
-   width = width / 2
-   height = height / 2
-   #if tileCount_g == 5:
-   #    printGraph(graph, (2**n), (2**n))
-   #    exit(0)
-   print("width: " + str(width / 2) + "\nheight: " + str(height / 2))
-   placeTiles(graph, width, height)
-   printGraph(graph, (2**n), (2**n))
-   placeTiles(graph, width + 2, height)
-   placeTiles(graph, width, height + 2)
-   placeTiles(graph, width + 2, height + 2)
+   width[maxx] = width[maxx] / 2
+   height[maxx] = height[maxx] / 2
    
+   print("width: " + str(width[maxx] / 2) + "\nheight: " + str(height[maxx] / 2))
+   placeTiles(graph, width, height)
+   printGraph(graph)
+   placeTiles(graph, width, height)
+   placeTiles(graph, [width[minn] + 2, width[maxx]], height)
+   placeTiles(graph, width, height)
+   placeTiles(graph, width, [height[minn] + 2, height[maxx]])
+   placeTiles(graph, width, height)
+   placeTiles(graph, [width[minn] + 2, width[maxx]], \
+                    [height[minn] + 2, height[maxx]])
+   placeTiles(graph, width, height)
    #print("width: " + str(width) + "\nheight: " + str(height / 2))
    #placeTiles(graph, width / 2, height / 2)
 
@@ -82,8 +84,8 @@ def placeTiles(graph, width, height):
 
 def placeTile(graph, quadrant, width, height):
    global tileCount_g
-   xCord = math.floor(width / 2)
-   yCord = math.floor(height / 2)
+   xCord = math.floor(width[1] / 2)
+   yCord = math.floor(height[1] / 2)
    if 1 == 1:
       print("x:" + str(xCord) + " Y: " + str(yCord))
       if quadrant == 1:
@@ -93,55 +95,59 @@ def placeTile(graph, quadrant, width, height):
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
          #tileCount_g = tileCount_g + 1
-         printGraph(graph, int(width), int(height))
+         #printGraph(graph, int(width), int(height))
          #print("Tile cnt: " + str(tileCount_g))
       elif quadrant == 2:
          #print("x: " + str(xCord) + " y: " + str(yCord))
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord][yCord] = tileCount_g
-         printGraph(graph, int(width), int(height))
+         #printGraph(graph, int(width), int(height))
          #tileCount_g = tileCount_g + 1
          #print("Tile cnt: " + str(tileCount_g))
       elif quadrant == 3:
          graph[xCord][yCord] = tileCount_g
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
-         printGraph(graph, int(width), int(height))
+         #printGraph(graph, int(width), int(height))
       elif quadrant == 4:
          graph[xCord][yCord - 1] = tileCount_g
          graph[xCord - 1][yCord] = tileCount_g
          graph[xCord - 1][yCord - 1] = tileCount_g
-         printGraph(graph, int(width), int(height))
+         #printGraph(graph, int(width), int(height))
 #   print("Quadrant: " + str(quadrant))
    print("TILE COUNT: " + str(tileCount_g))
 
 def getDeadQuadrant(graph, width, height):
    x = -1
+
+   # For accessing width/height tuple
+   minn = 0
+   maxx = 1
    print("width: " + str(width) + "\nheight: " + str(height))
 
    # Check x quadrant
    for x in range(4):
       # If first quadrant
       if x == 1:
-         rowRange = (0, (height / 2)) # (min, max)
-         colRange = ((width / 2), width)
+         rowRange = (height[minn], (height[maxx] / 2)) # (min, max)
+         colRange = ((width[maxx] / 2), width[maxx])
          if quadrantIsDead(graph, rowRange, colRange):
             return 1
 
       elif x == 2:
-         rowRange = (0, (height / 2)) # (min, max)
-         colRange = (0, (width / 2))
+         rowRange = (height[minn], (height[maxx] / 2)) # (min, max)
+         colRange = (width[minn], (width[maxx] / 2))
          if quadrantIsDead(graph, rowRange, colRange):
             return 2
       elif x == 3:
-         rowRange = ((height / 2), height) # (min, max)
-         colRange = (0, (width / 2))
+         rowRange = ((height[maxx] / 2), height[maxx]) # (min, max)
+         colRange = (width[minn], (width[maxx] / 2))
          if quadrantIsDead(graph, rowRange, colRange):
             return 3
       elif x == 4:
-         rowRange = ((height / 2), height) # (min, max)
-         colRange = ((width / 2), width)
+         rowRange = ((height[maxx] / 2), height[maxx]) # (min, max)
+         colRange = ((width[maxx] / 2), width[maxx])
          if quadrantIsDead(graph, rowRange, colRange):
             return 4
 
@@ -176,11 +182,18 @@ def createGraph(width, height):
    graph = [[0 for x in range(width)] for y in range(height)]
    return graph
 
-def printGraph(graph, width, height):
-    for x in range(int(width)):
-        for y in range(int(height)):
-           print(graph[x][y], end=" ")
-        print("")
+def printGraph(graph, width = None, height = None):
+    global n
+    if width == None:
+        for x in range(int(2**n)):
+            for y in range(int(2**n)):
+                print(graph[x][y], end=" ")
+            print("")
+    else:
+        for x in range(width):
+            for y in range(height):
+                print(graph[x][y], end=" ")
+            print("")
 
 
 
