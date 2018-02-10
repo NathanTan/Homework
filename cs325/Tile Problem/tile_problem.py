@@ -34,28 +34,28 @@ def main():
 #   placeTiles(graph, width, height, offset)
 #   printGraph(graph, width, height)
 
-
-
-
 def placeTiles(graph, width, height):
    global n
    global tileCount_g
    tileLevel = 0
    offset = 0
+
+
+   # Inital tile drop
+
    quadrant = getDeadQuadrant(graph, width, height)
    print("QUADRANT: " + str(quadrant))
    placeTile(graph, quadrant, width, height)
    tileCount_g = tileCount_g + 1
    printGraph(graph, width, height)
    
-   tileLevel = 1
+   # 2nd quadrant tile drop
+   tileLevel = 0
    offset = n - tileLevel
+   print("N: " + str(n))
    print("Offset: " + str(offset))
-   #quadrant = getDeadQuadrant(graph, width, height)
-   quadrant = getDeadQuadrant(graph, width - 2, height - 2)
-   print("QUADRANT: " + str(quadrant))
-   #placeTile(graph, quadrant, width , height)
-   placeTile(graph, quadrant, width - 2, height - 2)
+   quadrant = getDeadQuadrant(graph, width - offset, height - offset)
+   placeTile(graph, quadrant, width - offset, height - offset)
    printGraph(graph, width, height)
    tileCount_g = tileCount_g + 1
 
