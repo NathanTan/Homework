@@ -2,6 +2,7 @@
 from random import randint
 import statistics
 import math
+import time
 import sys
 
 #################### Globals ####################
@@ -27,9 +28,13 @@ def main():
    graph = createGraph(width[1] + 1, height[1] + 1)
    initalizeDeadSpace(graph, width[1] + 1, height[1] + 1)
    
-   printGraph(graph)   
+   printGraph(graph) 
+   start = time.time()  
    placeTiles(graph, width, height, offset)
+   end = time.time()
    printGraph(graph)
+
+   print("Elpased time: " + str(end - start))
 
 
 def placeTiles(graph, width, height, offset):
