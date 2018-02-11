@@ -9,18 +9,17 @@ import sys
 tileCount_g = 1
 n = -1
 alteredQuadrant_g = 0
+size_g = 4
 
 def main():
    global n
+   global size
    print("Welcome to the tiling problem")
    width = 4
    height = 4
    tileLevel = 1
 
-   if len(sys.argv) != 2:
-       print("Usage: python3 " + sys.argv[0] + " [Size of matrix]")
-       exit(1)
-   n = math.log(float(sys.argv[1]), 2)
+   n = math.log(size_g, 2)
    height = [0, int(sys.argv[1]) - 1]
    width = [0, int(sys.argv[1]) - 1]
 
@@ -257,10 +256,10 @@ def createGraph(width, height):
    return graph
 
 def printGraph(graph, width = None, height = None):
-    global n
+    global size_g
     if width == None:
-        for x in range(int(sys.argv[1])):
-            for y in range(int(sys.argv[1])):
+        for x in range(size_g):
+            for y in range(size_g):
                 print(graph[x][y], end=" ")
             print("")
     else:
