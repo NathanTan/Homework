@@ -7,6 +7,7 @@ import sys
 #################### Globals ####################
 tileCount_g = 1
 n = -1
+alteredQuadrant_g = 0
 
 def main():
    global n
@@ -36,14 +37,17 @@ def main():
 def placeTiles(graph, width, height, offset):
    global n
    global tileCount_g
+   global alteredQuadrant_g
+   if int(tileCount_g) == 6:
+       return
 
-   print("-----")
-   print(width)
-   print(height)
-   print(offset)
-   print(n)
-   print(tileCount_g)
-   print("-----")
+#    print("-----")
+#    print(width)
+#    print(height)
+#    print(offset)
+#    print(n)
+#    print(tileCount_g)
+#    print("-----")
    
    #print("TILEC: " + str(tileCount_g))
    #Set n for smaller examples, secifically a 4x4
@@ -58,13 +62,13 @@ def placeTiles(graph, width, height, offset):
    minn = 0
    maxx = 1
 
-   # Inital tile drop
-  # offset = 4 / 2
-   #print("NNN: " + str(n))
+
 
    print("-----")
-   print(width)
+   print("Height: ", end="")
    print(height)
+   print("Width: ", end="")
+   print(width)
    print(offset)
    print(n)
    print(tileCount_g)
@@ -78,11 +82,34 @@ def placeTiles(graph, width, height, offset):
    if (width[maxx] / 2) < 1 or (height[maxx] / 2) < 1:
        print("Returning")
        return None
+   if tileCount_g == (2**n + 2):
+       return
+   else:
+       print("\t\t\t\t\t\t" + str(2**n + 2))
+       print("\t\t\t\t\t\t" + str(tileCount_g))
 
-   width[maxx] = width[maxx] - 2
-   height[maxx] = height[maxx] - 2
+   half = math.ceil(height[maxx] / 2)
+   print("HALF: " + str(half))
+   #h 0 1
+   #w 2 3
+    
+   width[maxx] = width[maxx] - half
+   height[maxx] = height[maxx] - half
    placeTiles(graph, width, height, 1)
-   #printGraph(graph)
+
+   width[maxx] = width[maxx] + half
+   #height[maxx] = height[maxx] + half
+   width[minn] = width[minn] + half
+   #height[minn] = height[minn] + half
+   alteredQuadrant_g = 1
+   print("alt: " + str(alteredQuadrant_g))
+   placeTiles(graph, width, height, 1)
+   
+   height[minn] = height[minn] + half
+   height[maxx] = height[maxx] + half
+   alteredQuadrant_g = 2
+   print("alt: " + str(alteredQuadrant_g))
+   placeTiles(graph, width, height, 1)
    
    
 #    # 2nd quadrant tile drop
@@ -132,19 +159,34 @@ def placeTiles(graph, width, height, offset):
 def placeTile(graph, quadrant, width, height, offset):
    global tileCount_g
    global n
+   global alteredQuadrant_g
    minn = 0
    maxx = 1
    offset = abs(offset)
-   #print("!-!width: " + str(width[minn])+ " " + str(width[maxx]))
-   #print("!-!height: " + str(height[minn]) + " " + str(height[maxx]))
+   print("!-!width: " + str(width[minn])+ " " + str(width[maxx]))
+   print("!-!height: " + str(height[minn]) + " " + str(height[maxx]))
    #print("Offset: " + str(offset))
 #    xCord = int(width[1] - offset + 1)
 #    yCord = int(height[1] - offset + 1)
    xCord = abs(int(width[1] + 1 - n - offset))
    yCord = abs(int(height[1] + 1 - n - offset))
+   if tileCount_g == 5:
+       xCord = xCord + 2
+   elif int(alteredQuadrant_g) == 1:
+       print("\t\t\t\t\t\t\tALTERED")
+       yCord = yCord + 2
+   elif int(alteredQuadrant_g) == 2:
+       print("\t\t\t\t\t\t\tALTERED")
+       yCord = yCord + 2
+       xCord = xCord + 2
+
+
+
+
    #print("n: " + str(n))
    print("xCord :" + str(xCord))
-   print("xCord: " +str(width[1] + 1) + " - " +str(n) + " - " + str(offset))
+   print("xCord: " +str(height[1] + 1) + " - " +str(n) + " - " + str(offset))
+   print("yCord: " +str(width[1] + 1) + " - " +str(n) + " - " + str(offset))
    print("yCord :" + str(yCord))
    if 1 == 1:
       print("x:" + str(xCord) + " Y: " + str(yCord))
@@ -198,23 +240,23 @@ def placeTile(graph, quadrant, width, height, offset):
 def getDeadQuadrant(graph, width, height, offset):
    x = -1
    global n
-   print("w/h")
-   print("Cols: " + str(width))
-   print("Rows: " + str(height))
-   print("Offset: " + str(offset))
-   print("n: " + str(n))
-#    if offset < 0:
-#        offset = offset * (-1)
+#    print("w/h")
+#    print("Cols: " + str(width))
+#    print("Rows: " + str(height))
+#    print("Offset: " + str(offset))
+#    print("n: " + str(n))
+
 
    # For accessing width/height tuple
    minn = 0
    maxx = 1
-#    print("width: " + str(width) + "\nheight: " + str(height))
-#    if (width[maxx] / 2) - width[minn] == 0 and (height[maxx] / 2) - height[minn] == 0:
-#        offset = 0
-   lenn = width[maxx]
 
-   if str(lenn) == "1":
+   rangelen = width[maxx]
+   if (width[maxx] - width[minn]) == 1 and \
+      (height[maxx] - height[minn]) == 1:
+      rangelen = 1
+
+   if str(rangelen) == "1":
        return specialCase(graph, height, width)
    
 
@@ -244,7 +286,7 @@ def getDeadQuadrant(graph, width, height, offset):
 
         #  rowRange = (height[minn], (height[maxx] - offset)) # (min, max)
         #  colRange = (width[minn]  + offset, width[maxx])
-          if quadrantIsDead(graph, rowRange, colRange, lenn):
+          if quadrantIsDead(graph, rowRange, colRange):
             return 1
 
       elif x == 2:
@@ -265,7 +307,7 @@ def getDeadQuadrant(graph, width, height, offset):
         #  colRange = (width[minn], (width[maxx] - offset))
          print("----!!\nrowRange: " + str(rowRange))
          print("colRange: " + str(colRange))
-         if quadrantIsDead(graph, rowRange, colRange, lenn):
+         if quadrantIsDead(graph, rowRange, colRange):
             return 2
       elif x == 3:
          print("\t\t\tChecking: Q3")
@@ -275,9 +317,7 @@ def getDeadQuadrant(graph, width, height, offset):
          half = math.ceil(height[maxx] / 2)
          if half == 1: half = 0 #Base case
          colRange = (width[minn], width[maxx] - half)
-        #  rowRange = (height[minn] + offset, height[maxx]) # (min, max)
-        #  colRange = (width[minn], (width[maxx] - offset))
-         if quadrantIsDead(graph, rowRange, colRange, lenn):
+         if quadrantIsDead(graph, rowRange, colRange):
             return 3
       elif x == 4:
          print("\t\t\tChecking: Q4")          
@@ -289,9 +329,8 @@ def getDeadQuadrant(graph, width, height, offset):
          if half == 1: half = 0 #Base case
          
          colRange = (width[minn] + half, width[maxx])
-        #  rowRange = (height[minn] + offset, height[maxx] + offset) # (min, max)
-        #  colRange = (width[minn] + offset, width[maxx] + offset)
-         if quadrantIsDead(graph, rowRange, colRange, lenn):
+       
+         if quadrantIsDead(graph, rowRange, colRange):
             return 4
 
    return 4
@@ -299,42 +338,21 @@ def getDeadQuadrant(graph, width, height, offset):
 
 # rangeMin can be as low as 0 and rangeMax should be 
 # the width - 1 maxium
-def quadrantIsDead(graph, rowRange, colRange, lenn):
-#    if rowRange[0] == rowRange[1]:
-#        x = rowRange[0]
-#        y = rowRange[1]       
-#        print("Checking: graph[" + str(x) + "][" + str(y) + "]: " + str(graph[x][y]))
-#        if graph[x][y] != 0:
-#             return True
-#    if colRange[0] == colRange[1]:
-#        x = colRange[0]
-#        y = colRange[1]       
-#        print("Checking: graph[" + str(x) + "][" + str(y) + "]: " + str(graph[x][y]))
-#        if graph[x][y] != 0:
-#             return True
-   #lenn = rowRange[1] - rowRange[0]
-   #prin
-   print("len: " + str(lenn))
+def quadrantIsDead(graph, rowRange, colRange):
    print("Ranges (r/c)")
    xl = int(rowRange[0])
 
    xh = int(rowRange[1])
 
-   if str(lenn) != "1":
-      xh = xh + 1
+   #if str(lenn) != "1":
+   xh = xh + 1
 
    yl = int(colRange[0])
    yh = int(colRange[1])
 
-   if str(lenn) != "1":
-      yh = yh + 1
- 
-#    if int(lenn) != "1": 
-#        yh = int(colRange[1]) + 1
-#    else:  
-#        print("\t\t\t\t\tyhlen" + str(lenn))
-#        yh = int(colRange[1])
- 
+   #if str(lenn) != "1":
+   yh = yh + 1
+  
    print(range(xl, xh))
    print(range(yl, yh))
    for x in range(xl, xh):
