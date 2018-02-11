@@ -2,6 +2,7 @@
 from random import randint
 import sys
 import math
+import time
 
 greaterThan = "Greater than"
 lessThan = "Less than"
@@ -74,6 +75,7 @@ def main():
         print("Number of coins must be a factor of 3")
         exit(1)
 
+    startTime = time.time()
     # Start the search for the odd coin
     coinRange = numOfCoins / 3
     coinFound = False
@@ -122,7 +124,8 @@ def main():
     else:
         print("Odd coin index is " + str(oddCoinIndex))
         determineCoinWeight(x.compareRange((oddCoinIndex, oddCoinIndex), (0,0)))
-    
+    endTime = time.time()
+    print("This program took " + str(endTime - startTime) + " to find the coin, and if it is lighter of heavier than the other coins.")
     return 0 # Exit program
 
 def determineCoinWeight(result):
