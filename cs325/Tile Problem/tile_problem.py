@@ -13,15 +13,15 @@ size_g = 4
 
 def main():
    global n
-   global size
+   global size_g
    print("Welcome to the tiling problem")
    width = 4
    height = 4
    tileLevel = 1
 
    n = math.log(size_g, 2)
-   height = [0, int(sys.argv[1]) - 1]
-   width = [0, int(sys.argv[1]) - 1]
+   height = [0, int(size_g) - 1]
+   width = [0, int(size_g) - 1]
 
    offset = 4 / 2
    graph = createGraph(width[1] + 1, height[1] + 1)
@@ -35,7 +35,6 @@ def main():
 
    print("Elpased time: " + str(end - start))
 
-
 def placeTiles(graph, width, height, offset):
    global n
    global tileCount_g
@@ -46,7 +45,6 @@ def placeTiles(graph, width, height, offset):
    #Set n for smaller examples, secifically a 4x4
    if (tileCount_g == 1): n = 2
    elif (tileCount_g >= 2) and (tileCount_g <= 5): n = 1
-   #print("n: "+ str(n))
    #Set offset
    if (n == 1): offset = 2
    elif (n == 2): offset = 0 
