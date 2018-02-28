@@ -1,12 +1,29 @@
 #!/bin/python3
 
 def main():
-    print("In main")
-    size = 4
+    size = 5
+    start = (0, 0)
     board = create_board(size)
     fill_board(board, size)
     print_board(board, size)
 
+    execute_knights_tour(board, size, start)
+    print_board(board, size)
+
+def execute_knights_tour(board, size, knight_pos):
+    row = 0
+    col = 1
+    update_board(board, size, knight_pos)
+
+
+def update_board(board, size, knight_pos):
+    row = knight_pos[0]
+    col = knight_pos[1]
+    board[row][col] = 0
+    if row + 2 < size and col + 1 >= 0:
+        board[row + 2][col + 1]  -= 1
+    if row + 1 < size and col + 2 > size:
+        board[row + 1][col + 2] -= 1
 
 def create_board(size):
     graph = [[0 for x in range(size)] for y in range(size)]
@@ -53,7 +70,7 @@ def print_board(board, size):
         for col in range(size):
             print(board[row][col], end=" ")
         print("")
-
+    print("")
 
 if __name__ == "__main__":
     main()
