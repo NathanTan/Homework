@@ -1,8 +1,8 @@
 #!/bin/python3
 
 def main():
-    size = 5
-    start = (0, 0)
+    size = 6
+    start = (2, 2)
     board = create_board(size)
     fill_board(board, size)
     print_board(board, size)
@@ -10,20 +10,146 @@ def main():
     execute_knights_tour(board, size, start)
     print_board(board, size)
 
+# Checks if the path is complete
+def path_is_closed(board, size):
+    None
+
 def execute_knights_tour(board, size, knight_pos):
-    row = 0
-    col = 1
+    
     update_board(board, size, knight_pos)
+    knight_pos = get_next_pos(board, size, knight_pos)
+    print_board(board, size)
+    update_board(board, size, knight_pos)
+    knight_pos = get_next_pos(board, size, knight_pos)
+    print_board(board, size)
+    
+    update_board(board, size, knight_pos)
+    knight_pos = get_next_pos(board, size, knight_pos)
+    
+
+
+def get_next_pos(board, size, knight_pos):
+    availible_spaces = get_legal_moves(board, size, knight_pos)
+    if len(availible_spaces) < 1:
+        print("ERROR")
+        print_board(board, size)
+        print("Knights position: " + str(knight_pos))
+    return availible_spaces[0]
+
+def get_legal_moves(board, size, knight_pos):
+    moves = []
+    row = knight_pos[0]
+    col = knight_pos[1]
+    min_val = 9 # 8 is the maximum allowed value
+    min_val_loc = -1 # The position of the lowest value in the array
+
+
+    # Bottom right
+    x = row + 2
+    y = col + 1
+    if x < size and y < size:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    x = row + 1
+    y = col + 2
+    if x < size and y < size:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+    
+    #Top right
+    x = row - 1
+    y = col + 2
+    if x >= 0 and y < size:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    x = row - 2
+    y = col + 1
+    if row - 2 >= 0 and col + 1 < size:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    #Top left
+    x = row - 2
+    y = col - 1
+    if x >= 0 and y >= 0:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    x = row - 1
+    y = col - 2
+    if x >= 0 and y >= 0:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    # Bottom right
+    x = row + 1
+    y = col - 2
+    if x < size and y >= 0:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+    x = row + 2
+    y = col - 1    
+    if x < size and y >= 0:
+        min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
+        moves.append((x, y))
+
+    return moves
+
+def mark_min(board_val, min_val, min_val_loc, moves_len):  
+    if board_val < min_val and board_val > 0:
+        return board_val, moves_len # Set the new values
+    else:
+        return min_val, min_val_loc # Keep the old values
+
 
 
 def update_board(board, size, knight_pos):
     row = knight_pos[0]
     col = knight_pos[1]
     board[row][col] = 0
-    if row + 2 < size and col + 1 >= 0:
-        board[row + 2][col + 1]  -= 1
-    if row + 1 < size and col + 2 > size:
-        board[row + 1][col + 2] -= 1
+    # Bottom right
+    x = row + 2
+    y = col + 1
+    print(x)
+    print(y)
+    if x < size and y < size and board[x][y] > 0:
+        board[x][y]  -= 1
+    x = row + 1
+    y = col + 2
+    if x < size and y < size and board[x][y] > 0:
+        board[x][y]  -= 1
+    
+    x = row - 1
+    y = col + 2
+    #Top right
+    if x >= 0 and y < size and board[x][y] > 0:
+        board[x][y]  -= 1
+    x = row - 2
+    y = col + 1
+    if x >= 0 and y < size and board[x][y] > 0:
+        board[x][y]  -= 1
+
+    #Top left
+    x = row - 2
+    y = col - 1
+    if x >= 0 and y >= 0 and board[x][y] > 0:
+        board[x][y]  -= 1
+    x = row - 1
+    y = col - 2
+    if x >= 0 and y >= 0 and board[x][y] > 0:
+        board[x][y]  -= 1
+
+    # Bottom right
+    x = row + 1
+    y = col - 2
+    if x < size and y >= 0 and board[x][y] > 0:
+        board[x][y]  -= 1
+    x = row + 2
+    y = col - 1
+    if x < size and y >= 0 and board[x][y] > 0:
+        board[x][y]  -= 1
 
 def create_board(size):
     graph = [[0 for x in range(size)] for y in range(size)]
