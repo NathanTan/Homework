@@ -1,40 +1,44 @@
 #!/bin/python3
 
 def main():
-    size = 6
+    size = 5
     start = (2, 2)
     board = create_board(size)
     fill_board(board, size)
     print_board(board, size)
 
-    execute_knights_tour(board, size, start)
+    path = execute_knights_tour(board, size, start)
     print_board(board, size)
+    print("Number of steps: " + str(len(path)))
+    print("Path: ", end="")
+    print(path)
 
 # Checks if the path is complete
 def path_is_closed(board, size):
-    None
+    for x in range(size):
+        for y in range(size):
+            if board[x][y] != 0:
+                return False
+    return True
 
 def execute_knights_tour(board, size, knight_pos):
-    
-    update_board(board, size, knight_pos)
-    knight_pos = get_next_pos(board, size, knight_pos)
-    print_board(board, size)
-    update_board(board, size, knight_pos)
-    knight_pos = get_next_pos(board, size, knight_pos)
-    print_board(board, size)
-    
-    update_board(board, size, knight_pos)
-    knight_pos = get_next_pos(board, size, knight_pos)
-    
+    path = [knight_pos]
+    while(not path_is_closed(board, size)):
+        update_board(board, size, knight_pos)
+        knight_pos = get_next_pos(board, size, knight_pos)
+        path.append(knight_pos)
+        # print_board(board, size)
+    return path
+   
 
 
 def get_next_pos(board, size, knight_pos):
-    availible_spaces = get_legal_moves(board, size, knight_pos)
-    if len(availible_spaces) < 1:
-        print("ERROR")
-        print_board(board, size)
-        print("Knights position: " + str(knight_pos))
-    return availible_spaces[0]
+    return get_legal_moves(board, size, knight_pos)
+    # if len(availible_spaces) < 1:
+    #     print("ERROR")
+    #     print_board(board, size)
+    #     print("Knights position: " + str(knight_pos))
+    # return availible_spaces[0]
 
 def get_legal_moves(board, size, knight_pos):
     moves = []
@@ -95,7 +99,8 @@ def get_legal_moves(board, size, knight_pos):
         min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
         moves.append((x, y))
 
-    return moves
+    return moves[min_val_loc]
+    #return moves
 
 def mark_min(board_val, min_val, min_val_loc, moves_len):  
     if board_val < min_val and board_val > 0:
@@ -112,8 +117,6 @@ def update_board(board, size, knight_pos):
     # Bottom right
     x = row + 2
     y = col + 1
-    print(x)
-    print(y)
     if x < size and y < size and board[x][y] > 0:
         board[x][y]  -= 1
     x = row + 1
