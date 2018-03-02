@@ -1,17 +1,34 @@
 #!/bin/python3
+import sys
 
 def main():
-    size = 5
-    start = (2, 2)
+    
+    # Check command line arguements
+    if len(sys.argv) != 4:
+        print("Usage: python3 " + sys.argv[0] + " [Board Size] [Start Row] [Start Column]\n")
+        print("Results found in results.txt")
+        exit(1)
+    
+
+    size = int(sys.argv[1])
+    start = (int(sys.argv[2]), int(sys.argv[3]))
+    if size - 1 < start[0] or size - 1 < start[1]:
+        print("Invalid start\n")
+        exit(1)
     board = create_board(size)
     fill_board(board, size)
-    print_board(board, size)
 
     path = execute_knights_tour(board, size, start)
-    print_board(board, size)
     print("Number of steps: " + str(len(path)))
     print("Path: ", end="")
     print(path)
+    f = open("results.txt", "a")
+    f.write("RUN: \n\tsize: " + str(size) + "\n\tstart: " + str(start) + "\n\t")
+    f.write(str(path))
+    f.write("\n")
+
+    f.close()
+
 
 # Checks if the path is complete
 def path_is_closed(board, size):
@@ -22,23 +39,24 @@ def path_is_closed(board, size):
     return True
 
 def execute_knights_tour(board, size, knight_pos):
+    start = knight_pos
     path = [knight_pos]
     while(not path_is_closed(board, size)):
         update_board(board, size, knight_pos)
         knight_pos = get_next_pos(board, size, knight_pos)
+        if knight_pos == -1:
+            print("Failed to find a solution")
+            print("Path thus far: ", end="")
+            f = open("results.txt", "a")
+            f.write("Failed to find a solution: \nsize: " + str(size) + "\nstart: " + str(start))
+            f.close()
+            exit(1)
         path.append(knight_pos)
-        # print_board(board, size)
     return path
    
 
-
 def get_next_pos(board, size, knight_pos):
     return get_legal_moves(board, size, knight_pos)
-    # if len(availible_spaces) < 1:
-    #     print("ERROR")
-    #     print_board(board, size)
-    #     print("Knights position: " + str(knight_pos))
-    # return availible_spaces[0]
 
 def get_legal_moves(board, size, knight_pos):
     moves = []
@@ -98,6 +116,10 @@ def get_legal_moves(board, size, knight_pos):
     if x < size and y >= 0:
         min_val, min_val_loc = mark_min(board[x][y], min_val, min_val_loc, len(moves))
         moves.append((x, y))
+
+    # Failed to find a valid square
+    if len(moves) == 0:
+        return -1
 
     return moves[min_val_loc]
     #return moves

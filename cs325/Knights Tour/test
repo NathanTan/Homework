@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#
+# Test script that runs every path for a 5 x 5 board
+#
+
+size=5
+for ((i=0; i < 5; i++))
+do
+   for ((j=0; j < 5; j++))
+   do
+      python3 ./knights_tour.py $size $i $j
+   done
+done
+echo done
