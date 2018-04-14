@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "mt19937ar.c"
 
 int main(int argc, char **argv)
 {
@@ -35,8 +36,12 @@ int main(int argc, char **argv)
     }
 	else{
         //use mt19937
-  
         printf("Using mt19937\n");
+
+        init_genrand(4);
+        unsigned long randd = genrand_int32();
+
+        printf("%10lu\n", randd);
         
 	}
 
