@@ -2,13 +2,17 @@
 #include <string.h>
 #include "mt19937ar.c"
 
+/* Function Headers */
+unsigned int get_random_value(unsigned int ecx);    
+
 int main(int argc, char **argv)
 {
 
 	unsigned int eax;
 	unsigned int ebx;
-	unsigned int ecx;
-	unsigned int edx;
+	unsigned int ecx;        
+    unsigned int edx;
+    unsigned int randd;
 
 	char vendor[13];
 	
@@ -19,7 +23,21 @@ int main(int argc, char **argv)
 	                     : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
 	                     : "a"(eax)
 	                     );
-	
+    
+    randd = get_random_value(ecx);
+
+    randd = (randd % 8) + 2;
+    
+    printf("%u\n", randd);
+
+	return 0;
+}
+
+unsigned int get_random_value(unsigned int ecx) {
+    /* Generate random number */                 
+    
+    unsigned int random_value;
+    
 	if(ecx & 0x40000000){
         //use rdrand
         
@@ -32,18 +50,18 @@ int main(int argc, char **argv)
                 : "=r" (rand), "=qm" (ok)
             );
         }
-        printf("%u\n", rand);
+
+        random_value = rand;
+        //        printf("%u\n", rand);
     }
 	else{
         //use mt19937
         printf("Using mt19937\n");
 
-        init_genrand(4);
-        unsigned long randd = genrand_int32();
+        init_genrand(5);
+        random_value = genrand_int32();
+        printf("%u\n", random_value);
+    }
 
-        printf("%10lu\n", randd);
-        
-	}
-
-	return 0;
+    return random_value;
 }
