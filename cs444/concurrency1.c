@@ -22,14 +22,16 @@ int main(int argc, char **argv)
 	if(ecx & 0x40000000){
         //use rdrand
         
+        int i = 0;
         unsigned int rand = 0;
         unsigned char ok = 0;
-        while((int)ok){
+        for(i = 0; i < 9; i++){
             __asm__ __volatile__ (
-                "rdrand %0; setc %1" : "=r" (rand), "=qm" (ok)
+                "rdrand %0; setc %1" 
+                : "=r" (rand), "=qm" (ok)
             );
         }
-        printf("%d\n", rand);
+        printf("%u\n", rand);
     }
 	else{
         //use mt19937
