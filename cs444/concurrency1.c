@@ -11,14 +11,22 @@
 
 /* Function Headers */
 unsigned int get_random_value(unsigned int ecx);
-void *produce_event(void *random_value, void *current_buff);
-void *consumer_event(void *random_value, void *current_buff);
+void *produce_event(void *params);
+void *consumer_event(void *params);
+void print_buffer_item(int pos);
 
 typedef struct Item
 {
     int value;
     int c_sleep; // Time consumer should sleep before consuming the next item.
 } Item;
+
+typedef struct Thread_Params
+{
+    int random_value;
+    int buffer_pos;
+    int consumer_sleep_time;
+} Thread_Params;
 
 /* Semaphores */
 sem_t mutex;
@@ -27,7 +35,6 @@ sem_t spaces;
 
 /* Buffer */
 Item buffer[BUFFER_SIZE];
-int current_buff;
 
 int main(int argc, char **argv)
 {
@@ -37,10 +44,12 @@ int main(int argc, char **argv)
     unsigned int ecx;
     unsigned int edx;
     unsigned int randd;
-    current_buff = 0;
+    int current_buff = 0;
     Item event = {};
 
     char vendor[13];
+
+    init_genrand(5); // Seed mt19937
 
     eax = 0x01;
 
@@ -69,17 +78,25 @@ int main(int argc, char **argv)
     pthread_t threads[NUM_THREADS];
     int result;
     int t = 0;
+    int random = 0;
     while (1)
     {
-
-        // Wait 3-7 seconds before starting next event
-        wait(3);
         // Produce Item
-        if (current_buff < 32)
+        if (current_buff < 31)
         {
-            randd = get_random_value(ecx);
 
-            result = pthread_create(threads + t, NULL, produce_event, (void *)randd, (void *)current_buff);
+            // Wait 3-7 seconds before starting next event
+            sleep((get_random_value(ecx) % 4) + 3);
+
+            random = get_random_value(ecx);
+
+            Thread_Params params = {random, current_buff, (random % 8) + 2};
+
+            result = pthread_create(threads + t, NULL, produce_event, (void *)&params);
+
+            sleep(1);
+            print_buffer_item(current_buff);
+
             t++;
             current_buff++;
         }
@@ -88,43 +105,45 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void *consumer_event(void *random_value, void *current_buff)
+void *consumer_event(void *params)
 {
     /* Consumer */
-    Item event = {};
+    // Item event = {};
 
-    sem_wait(&items);
-    sem_wait(&mutex);
-    event = buffer[current_buff];
-    sem_post(&mutex);
-    sem_post(&spaces);
+    // sem_wait(&items);
+    // sem_wait(&mutex);
+    // event = buffer[current_buff];
+    // sem_post(&mutex);
+    // sem_post(&spaces);
 
-    // "Process" the event
-    wait(2);
+    // // "Process" the event
+    // wait(2);
 }
 
 /* Producer */
-void *produce_event(void *random_value, void *current_buff)
+void *produce_event(void *params)
 {
-    unsigned int pos = (unsigned int)current_buff;
-    *current_buff = (unsigned int)*current_buff;
+    Thread_Params *p = (Thread_Params *)(params);
 
-    Item new_item = {2, 2};
+    Item new_item = {p->random_value, p->consumer_sleep_time};
 
     sem_wait(&spaces);
     sem_wait(&mutex);
 
     // Add the new event to the buffer
-    buffer[current_buff] = new_item;
+    buffer[p->buffer_pos] = new_item;
 
     sem_post(&mutex);
     sem_post(&items);
 
-    printf("Produced Item: [%d]\n", current_buff + 1);
-    printf("value: [%d]\n", new_item.value);
-    printf("time: [%d]\n", new_item.c_sleep);
-
     return;
+}
+
+void print_buffer_item(int pos)
+{
+    printf("Buffer[%d]: \n", pos);
+    printf("value: [%u]\n", buffer[pos].value);
+    printf("time:  [%u]\n\n", buffer[pos].c_sleep);
 }
 
 unsigned int get_random_value(unsigned int ecx)
@@ -153,11 +172,9 @@ unsigned int get_random_value(unsigned int ecx)
     else
     {
         //use mt19937
-        printf("Using mt19937\n");
 
-        init_genrand(5);
         random_value = genrand_int32();
-        printf("%u\n", random_value);
+        //printf("%u\n", random_value);
     }
 
     return random_value;
