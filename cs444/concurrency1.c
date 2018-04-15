@@ -38,7 +38,7 @@ sem_t spaces;
 Item buffer[BUFFER_SIZE];
 
 unsigned int ecx;
-int current_buff = 0;
+int current_buff;
 
 int main(int argc, char **argv)
 {
@@ -48,6 +48,7 @@ int main(int argc, char **argv)
     unsigned int edx;
     unsigned int randd;
     Item event = {};
+    current_buff = -1;
 
     char vendor[13];
 
@@ -103,6 +104,7 @@ void *consume_event()
 {
     while (1)
     {
+        printf("c\n");
 
         /* Consumer */
         Item event = {};
@@ -111,13 +113,13 @@ void *consume_event()
 
         sem_wait(&items);
         sem_wait(&mutex);
-        if (current_buff > 0)
+        if (current_buff >= 0)
         {
 
             event = buffer[current_buff];
 
             // "Process" the event
-            printf("Sleeping for event [%d]: %d\n", event.c_sleep, current_buff);
+            printf("Sleeping for event [%d]: %u\n", current_buff, event.c_sleep);
             sleep(event.c_sleep);
             current_buff--;
         }
@@ -133,6 +135,7 @@ void *produce_event()
 
     while (1)
     {
+        printf("p\n");
 
         sem_wait(&spaces);
         sem_wait(&mutex);
@@ -143,6 +146,7 @@ void *produce_event()
 
         if (current_buff < 31)
         {
+            current_buff++;
 
             sleep((random % 4) + 3);
 
@@ -151,7 +155,6 @@ void *produce_event()
             // Add the new event to the buffer
             buffer[current_buff] = new_item;
             print_buffer_item(current_buff);
-            current_buff++;
         }
 
         sem_post(&mutex);
