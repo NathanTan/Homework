@@ -11,8 +11,8 @@
 
 /* Function Headers */
 unsigned int get_random_value(unsigned int ecx);
-void *produce_event(void *params);
-void *consume_event(void *params);
+void *produce_event();
+void *consume_event();
 void print_buffer_item(int pos);
 void print_buffer(int size);
 
@@ -37,15 +37,16 @@ sem_t spaces;
 /* Buffer */
 Item buffer[BUFFER_SIZE];
 
+unsigned int ecx;
+int current_buff = 0;
+
 int main(int argc, char **argv)
 {
 
     unsigned int eax;
     unsigned int ebx;
-    unsigned int ecx;
     unsigned int edx;
     unsigned int randd;
-    int current_buff = 0;
     Item event = {};
 
     char vendor[13];
@@ -80,89 +81,82 @@ int main(int argc, char **argv)
     int result;
     int t = 0;
     int random = 0;
-    for (i = 0; i < 5; i++)
+    int thread_count = 10;
+    int i;
+    for (i = 0; i < thread_count / 2; i++)
     {
-        // Produce Item
-        if (current_buff < 31)
-        {
-
-            // Wait 3-7 seconds before starting next event
-            sleep((get_random_value(ecx) % 4) + 3);
-
-            random = get_random_value(ecx);
-
-            Thread_Params params = {random, current_buff, (random % 8) + 2};
-
-            result = pthread_create(threads + t, NULL, produce_event, (void *)&params);
-
-            sleep(1);
-            print_buffer_item(current_buff);
-
-            t++;
-            current_buff++;
-        }
-
-        // Consume Item
-
-        if (current_buff > 0)
-        {
-            Thread_Params params = {0, current_buff - 1, 0};
-            printf("Consuming buff[%d]\n", current_buff);
-            result = pthread_create(threads + t, NULL, consume_event, (void *)&params);
-            current_buff--;
-        }
+        pthread_create(&threads[i], NULL, produce_event, NULL);
+        pthread_create(&threads[i + 1], NULL, consume_event, NULL);
     }
 
-    print_buffer(current_buff);
+    for (i = 0; i < thread_count; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    // print_buffer(current_buff);
 
     return 0;
 }
 
-void *consume_event(void *params)
+void *consume_event()
 {
-    /* Consumer */
-    Item event = {};
-
-    Thread_Params *p = (Thread_Params *)(params);
-
-    if (p->buffer_pos > 0)
+    while (1)
     {
+
+        /* Consumer */
+        Item event = {};
+
+        // Thread_Params *p = (Thread_Params *)(params);
 
         sem_wait(&items);
         sem_wait(&mutex);
-        event = buffer[p->buffer_pos];
+        if (current_buff > 0)
+        {
+
+            event = buffer[current_buff];
+
+            // "Process" the event
+            printf("Sleeping for event [%d]: %d\n", event.c_sleep, current_buff);
+            sleep(event.c_sleep);
+            current_buff--;
+        }
         sem_post(&mutex);
         sem_post(&spaces);
-
-        // "Process" the event
-        printf("Sleeping for %d\n", event.c_sleep);
-        sleep(event.c_sleep);
     }
 }
 
 /* Producer */
-void *produce_event(void *params)
+void *produce_event()
 {
+    int random = 0;
 
-    Thread_Params *p = (Thread_Params *)(params);
-
-    if (p->buffer_pos < 31)
+    while (1)
     {
-
-        sleep((p->random_value % 4) + 3);
-
-        Item new_item = {p->random_value, p->consumer_sleep_time};
 
         sem_wait(&spaces);
         sem_wait(&mutex);
 
-        // Add the new event to the buffer
-        buffer[p->buffer_pos] = new_item;
+        random = get_random_value(ecx);
+
+        //Thread_Params *p = (Thread_Params *)(params);
+
+        if (current_buff < 31)
+        {
+
+            sleep((random % 4) + 3);
+
+            Item new_item = {random, (random % 8) + 2};
+
+            // Add the new event to the buffer
+            buffer[current_buff] = new_item;
+            print_buffer_item(current_buff);
+            current_buff++;
+        }
 
         sem_post(&mutex);
         sem_post(&items);
     }
-
     return;
 }
 
