@@ -80,18 +80,14 @@ int main(int argc, char **argv)
     /* Algorithm taken from the little book of semaphores */
 
     pthread_t threads[NUM_THREADS];
-    int result;
-    int t = 0;
-    int random = 0;
-    int thread_count = 10;
     int i;
-    for (i = 0; i < thread_count; i += 2)
+    for (i = 0; i < NUM_THREADS; i += 2)
     {
         pthread_create(&threads[i], NULL, produce_event, NULL);
         pthread_create(&threads[i + 1], NULL, consume_event, NULL);
     }
 
-    for (i = 0; i < thread_count; i++)
+    for (i = 0; i < NUM_THREADS; i++)
     {
         pthread_join(threads[i], NULL);
     }
@@ -121,7 +117,7 @@ void *consume_event()
 
             // "Process" the event
             printf("\t\t\tSleeping for event [%d]: %u\n", current_buff, event.c_sleep);
-            printf("\t\t\t(value: %u)\n", event.value);
+            printf("\t\t\t(value: %u)\n\n", event.value);
             sleep(event.c_sleep);
         }
     }
