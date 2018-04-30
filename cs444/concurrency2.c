@@ -25,66 +25,87 @@ typedef struct Philosopher
 
 /* Fuction Headers */
 void initalizeForks();
-void initalizePhilosophers();
+void *Philose(void *ph);
+void initalizePhilosophers(pthread_t *threads);
 
-char *names = {"Sherk", "COnfusious", "Nicehs", "The Scientist Formally Known As Rick", "Wall-E"};
+//const char* const names[] = {"Sherk", "COnfusious", "Nicehs", "The Scientist Formally Known As Rick", "Wall-E"};
 
 sem_t forks[FORK_COUNT];
 Philosopher philosophers[PHILOSOPHER_COUNT];
 
+void printState()
+{
+    int i = 0;
+    for (i = 0; i < PHILOSOPHER_COUNT; i++)
+    {
+        printf("%s:\n   %d\n   Chopsticks: (%d, %d)\n   Seat: %d\n\n", philosophers[i].name, philosophers[i].activity, philosophers[i].chopsticks[0], philosophers[i].chopsticks[1], philosophers[i].seat);
+    }
+    return;
+}
+
 int main()
 {
+    int i;
+    pthread_t threads[PHILOSOPHER_COUNT];
+
     // Initalize semaphores
     initalizeForks();
 
     /* Initalize the philosophers */
-    initalizePhilosophers();
+    initalizePhilosophers(threads);
 
     // Seed the random value generator
     srand(4);
 
+    for (i = 0; i < PHILOSOPHER_COUNT; i++)
+    {
+        printf(":p %d\n", i);
+        pthread_create(&threads[i], NULL, Philose, (void *)(philosophers + i));
+    }
+
+    for (i = 0; i < PHILOSOPHER_COUNT; i++)
+    {
+        printf(":p %d\n", i);
+        pthread_join(threads[i], NULL);
+    }
+
     while (1)
     {
-        printf("salsa\n");
-        sleep(2);
-        printf("\033[2J"); // Clears the screen
-        printf("banana\n");
-        sleep(2);
+        printf("here\n");
+        printState();
+        sleep(1);
         printf("\033[2J"); // Clears the screen
     }
     return 0;
 }
 
-void *Philose(Philosopher p)
+void *Philose(void *ph)
 {
+    Philosopher *p = (Philosopher *)(ph);
+    int leftFork = p->seat;
+    int rightFork = (p->seat + 1) % 5;
+
     while (1)
     {
-        int eat_time = rand();
-        int think_time = rand();
-
-        //Wait for the forks
-        sem_wait(&forks[p.seat]); // Wait for the fork to their right.
-
-        // Wait for the fork to their left.
-        if (p.seat == 0)
-            sem_wait(&forks[FORK_COUNT - 1]);
-        else
-            sem_wait(&forks[p.seat - 1]);
-
-        //eat
-        sleep(eat_time);
-
-        //put the chopsticks back
-        sem_post(&forks[p.seat]); // Wait for the fork to their right.
-
-        // Wait for the fork to their left.
-        if (p.seat == 0)
-            sem_post(&forks[FORK_COUNT - 1]);
-        else
-            sem_post(&forks[p.seat - 1]);
+        printf("PHILOSOPHER: %s\n", p->name);
+        int eat_time = (rand() % 7) + 2;
+        int think_time = (rand() % 19) + 1;
 
         //think
+        printf("%s is thinking for %d seconds\n", p->name, think_time);
         sleep(think_time);
+
+        //Wait for the forks
+        sem_wait(&forks[leftFork]);  // Wait for the fork to their left.
+        sem_wait(&forks[rightFork]); // Wait for the fork to their right.
+
+        //eat
+        printf("PHILOSOPHER: %s is going to spend %d seconds EATING\n", p->name, eat_time);
+        sleep(eat_time);
+
+        // Set the forks down.
+        sem_post(&forks[leftFork]);  // Set the left fork down.
+        sem_post(&forks[rightFork]); // Set the right fork down.
     }
 }
 
@@ -97,15 +118,40 @@ void initalizeForks()
         if (sem_init(&forks[i], 0, i) == -1)
             printf("Error\n");
     }
+    printf("Forks initalized\n");
 }
 
-void initalizePhilosophers()
+void initalizePhilosophers(pthread_t *threads)
 {
     int i = 0;
-    for (i = 0; i < PHILOSOPHER_COUNT; i++)
-    {
-        strcpy(philosophers[i].name, names[i]);
-        philosophers[i].activity = WAITING;
-        philosophers[i].seat = i;
-    }
+    //    for (i = 0; i < PHILOSOPHER_COUNT; i++)
+    //    {
+    philosophers[i].name = "1";
+    philosophers[i].activity = WAITING;
+    philosophers[i].seat = i;
+    i++;
+    philosophers[i].name = "p2";
+    philosophers[i].activity = WAITING;
+    philosophers[i].seat = i;
+    //    }
+    i++;
+    philosophers[i].name = "p3";
+    philosophers[i].activity = WAITING;
+    philosophers[i].seat = i;
+    //    }
+    i++;
+    philosophers[i].name = "p4";
+    philosophers[i].activity = WAITING;
+    philosophers[i].seat = i;
+    //    }
+    i++;
+    philosophers[i].name = "p5";
+    philosophers[i].activity = WAITING;
+    philosophers[i].seat = i;
+    //    }
+    //
+
+    printf("Threads mergered\n");
+
+    return;
 }
