@@ -16,16 +16,14 @@ sem_t output;
 sem_t super;
 LightSwitch lightSwitch;
 
-void *process();
-void *checkSem();
-
 /* Function Definitions */
 void unlock(LightSwitch *ls, sem_t *sem);
 void lock(LightSwitch *ls, sem_t *sem);
+void *process(void *processId);
 
 int main(int argc, char **argv)
 {
-   int numberOfThreads = 5;
+   int numberOfThreads = 3;
 
    srand(3);
 
@@ -43,13 +41,14 @@ int main(int argc, char **argv)
    pthread_t processors[numberOfThreads + 1];
 
    int i;
-   //pthread_create(&processors[0], NULL, checkSem, NULL);
-   for (i = 1; i < numberOfThreads; i++)
+   int ids[3] = {1, 2, 3};
+
+   for (i = 0; i < numberOfThreads; i++)
    {
-      pthread_create(&processors[i], NULL, process, NULL);
+      pthread_create(&processors[i], NULL, process, &ids[i]);
    }
 
-   for (i = 1; i < numberOfThreads; i++)
+   for (i = 0; i < numberOfThreads; i++)
    {
       pthread_join(processors[i], NULL);
    }
@@ -85,54 +84,30 @@ void lock(LightSwitch *ls, sem_t *sem)
    return;
 }
 
-void *checkSem()
+void *process(void *processId)
 {
-   int *val = malloc(sizeof(int));
-   int *superVal = malloc(sizeof(int));
-
-   while (1)
-   {
-      printf("in checkSem\n");
-      sleep(1);
-      sem_getvalue(&resources, val);
-      sem_getvalue(&(lightSwitch.lock), superVal);
-
-      if (*val == 0)
-      {
-         printf("\t\t\tBlocking on all new processes trying to access the resourcess\n");
-         lock(&lightSwitch, &resources);
-      }
-
-      if (*val == 3)
-      {
-         printf("\t\t\tThe block has been lifted\n");
-         unlock(&lightSwitch, &resources);
-      }
-      printf("\tSemVal: %d\n", *val);
-   }
-}
-
-void *process()
-{
+   int *id = (int *)processId;
    while (1)
    {
       int waitTime = rand() % 15;
       int processTime = (rand() % 8) + 2;
-      //printf("in process\n");
+
       lock(&lightSwitch, &super);
       sem_wait(&resources);
+
       sem_wait(&output);
-
-      printf("Thread (%lu) is using a resource for %d seconds\n", pthread_self(), processTime);
-
-      //sleep(waitTime);
-
-      sleep(processTime);
-      printf("Process %lu finished\n", pthread_self());
+      printf("Thread (%lu) is using a resource\n", *id);
       sem_post(&output);
+
+      sleep(2);
+
+      sem_wait(&output);
+      printf("Process %lu finished\n", *id);
+      sem_post(&output);
+
       sem_post(&resources);
       unlock(&lightSwitch, &super);
 
-      sleep((rand() % 3) + 1);
+      sleep(processTime);
    }
 }
