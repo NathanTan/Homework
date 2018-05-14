@@ -4,9 +4,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdlib.h>
-#include "mt19937ar.c"
 
-#define NUM_THREADS 30
+#define NUM_THREADS 6
 #define BUFFER_SIZE 32
 #define DATA_MAX_SIZE 10
 
@@ -33,7 +32,6 @@ typedef struct head
 node * list;
 
 /* Function Headers */
-unsigned int get_random_value(unsigned int ecx);
 void *searcher();
 void *inserter();
 void *deleter();
@@ -96,41 +94,6 @@ int main(int argc, char **argv)
 }
 
 
-
-unsigned int get_random_value(unsigned int ecx)
-{
-   /* Generate random number */
-
-   unsigned int random_value;
-
-   if (ecx & 0x40000000)
-   {
-      //use rdrand
-
-      int i = 0;
-      unsigned int rand = 0;
-      unsigned char ok = 0;
-      for (i = 0; i < 9; i++)
-      {
-         __asm__ __volatile__(
-               "rdrand %0; setc %1"
-               : "=r"(rand), "=qm"(ok));
-      }
-
-      random_value = rand;
-      //        printf("%u\n", rand);
-   }
-   else
-   {
-      //use mt19937
-
-      random_value = genrand_int32();
-      //printf("%u\n", random_value);
-   }
-
-   return random_value;
-}
-
 void *searcher() {
    int d; // Data
    while(1) {
@@ -145,7 +108,6 @@ void *inserter() {
    while(1) {
       d = rand() % DATA_MAX_SIZE;
       insert(list, d);
-      printf("Inserter: %d was added to the list\n", d);
       sleep(rand() % 5);
    }
 }
@@ -175,25 +137,25 @@ void search(node *h, int data) {
 
    sem_post(&searchSwitch);
    find_node(h, data);
-   sem_wait(&noSearcher);
+   sem_wait(&searchSwitch);
    searchSafety--;
    if (searchSafety == 0) {
       sem_post(&noSearcher);
    }
-   sem_post(&noSearcher);
+   sem_post(&searchSwitch);
    return;
 }
 
 void insert(node *h, int data) {
    // If error on trywait
    if (sem_trywait(&insertSwitch) < 0) {
-      printf("Inserter:\t%lu is blocked\n", pthread_self());
+      printf("\tInserter:\t%lu is blocked\n", pthread_self());
       sem_wait(&insertSwitch);
    }
 
    insertSafety++;
    if (insertSafety == 1 && sem_trywait(&noInserter) < 0) {
-      printf("Searcher: %lu is blocked\n", pthread_self());
+      printf("\tInserter:\t%lu is blocked\n", pthread_self());
       sem_wait(&noInserter);
    }
 
@@ -236,7 +198,7 @@ void find_node(node *h, int data) {
    node *iter;
 
    if (h->next == NULL) {
-      printf("Searcher [%lu]: List is empty", pthread_self());
+      printf("Searcher [%lu]: List is empty\n", pthread_self());
    }
 
    else {
@@ -246,6 +208,7 @@ void find_node(node *h, int data) {
          if (iter->data == data) {
             printf("Searcher [%lu]: Data '%d' located at [%d]\n", pthread_self(), data, pos);
          }
+         iter = iter->next;
       }
    }
 
@@ -253,6 +216,8 @@ void find_node(node *h, int data) {
 }
 
 void append_node(node *h, int data) {
+   int pos = 0;
+   
    // New node
    node *n = malloc(sizeof(node)); 
    n->data = data;
@@ -267,9 +232,11 @@ void append_node(node *h, int data) {
       iter = h->next;
       while(iter->next != NULL) {
          iter = iter->next;
+         pos++;
       }
       iter->next = n;
    }
+   printf("\tInserter: %d was added to the list.\n", data);
 }
 
 /* Deletes the first node containing the matching data */
@@ -279,11 +246,12 @@ void delete_node(node *h, int data) {
 
    if (h->next == NULL) {
       printf("Deleter: list is empty\n");
+      return;
    }
 
    // If we are removing the first element
    else if (h->next->data == data) {
-      
+
       // If there is only element in the list
       if (h->next->next == NULL) {
          free(h->next);
@@ -297,13 +265,13 @@ void delete_node(node *h, int data) {
          h->next = temp;
       }
    }
-   
+
    else {
       iter = h->next;
-      while (iter != NULL) {
+      while (iter->next != NULL) {
          if (iter->next->data == data) {
             temp = iter->next;
-            
+
             // If we are at the end of the list
             if (iter->next == NULL) {
                free(iter);
@@ -313,6 +281,7 @@ void delete_node(node *h, int data) {
             else {
                iter->next = temp->next;
                free(temp);
+               break;
             }
          }
          iter = iter->next;
