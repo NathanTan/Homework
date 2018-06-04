@@ -1,11 +1,15 @@
 all:
 	make barber
-	make smokers
+	make debugSmokers
 
 barber:
-	gcc --std=c99 -lpthread barberShop.c -o barberShop
+	gcc --std=c99 -lpthread barbershop.c -o barbershop
 smokers:
 	gcc --std=c99 -lpthread smokingProblem.c -o smokingProblem
+
+debugSmokers:
+	gcc --std=c99 -DDEBUG -lpthread smokingProblem.c -o smokingProblem
+
 clean:
-	rm barberShop
+	rm barbershop
 	rm smokingProblem

@@ -8,78 +8,80 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-
 typedef struct ThreadParams
 {
    int placeholder;
 } ThreadParams;
 
+typedef int bool;
+#define false 0;
+#define true 1;
+
 /* Function Headers */
 void *getHairCut();
 void *cutHair();
-void balk();
 void *administerA();
 void *administerB();
 void *administerC();
-void *smoke();
+void *smoker_A();
+void *smoker_B();
+void *smoker_C();
 void *pusherA();
+void *pusherB();
+void *pusherC();
+void initalizeSemaphores();
 
 /* Semaphores */
+sem_t mutex;
 sem_t agentSem;
-sem_t tobacco;
 sem_t tobaccoSem;
 sem_t paperSem;
 sem_t matchSem;
+sem_t tobacco;
 sem_t paper;
 sem_t match;
 
 /* Other Globals */
 int customers;
-int chairs;
+int numOfSmokers;
+bool isTobacco = false;
+bool isPaper = false;
+bool isMatch = false;
+int numTobacco = 0;
+int numPaper = 0;
+int numMatch = 0;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-   chairs = 0;
    int i = 0;
+   numOfSmokers = 0;
 
    /* Semaphore Initalization */
-   if (sem_init(&agentSem, 0, 1) == -1)
-   {  printf("Error\n"); exit(1);  }
+   initalizeSemaphores();
 
-   if (sem_init(&tabacco, 0, 1) == -1)
-   {  printf("Error\n"); exit(1);  }
-
-   if (sem_init(&paper, 0, 0) == -1)
-   {  printf("Error\n"); exit(1);  }
-
-   if (sem_init(&match, 0, 0) == -1)
-   {  printf("Error\n"); exit(1);  }
-
-   if (sem_init(&tobaccoSem, 0, 0) == -1)
-   {  printf("Error\n"); exit(1);  }
-   
-   if (sem_init(&paperSem, 0, 0) == -1)
-   {  printf("Error\n"); exit(1);  }
-   
-   if (sem_init(&matchSem, 0, 0) == -1)
-   {  printf("Error\n"); exit(1);  }
-   
    // Deal with command line arguments.
-   for (i = 1; i < argc; i += 2) {
-      if (strcmp(argv[i], "-c") == 0) {
-         chairs = atoi(argv[i + 1]);
-         if (chairs == 0) 
+   if (argc == 0)
+   {
+      printf("\tUsage: %s [-s] [Sets of smokers]\n\n");
+      exit(0);
+   }
+
+   for (i = 1; i < argc; i += 2)
+   {
+      if (strcmp(argv[i], "-s") == 0)
+      {
+         numOfSmokers = atoi(argv[i + 1]);
+         if (numOfSmokers == 0)
          {
-            printf("\t\t\t----------------------------\n");
-            printf("\t\t\t- WARNING: No chairs.\n");
-            printf("\t\t\t- No customers will be able\n");
-            printf("\t\t\t- to enter the shop\n");
-            printf("\t\t\t----------------------------\n\n");
+            printf("\t\t\tError: No smokers.\n");
+            printf("\t\t\tExiting\n");
+            exit(1);
          }
       }
-      
-      if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-         printf("\tUsage: %s [-c] [Number of availible chairs]\n\n");
+
+      if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
+      {
+         printf("\tUsage: %s [-s] [Sets of smokers]\n\n");
          exit(0);
       }
    }
@@ -87,20 +89,27 @@ int main(int argc, char** argv)
    /* Seed random number generator */
    srand(14);
 
+   int threadCount = (numOfSmokers * 3) + 6;
+
    /* Create threads */
-   pthread_t threads[chairs + 1];
+   pthread_t threads[threadCount];
 
-   /* Barber */
-   pthread_create(&threads[0], NULL, cutHair, NULL);
-
-   for (i = 1; i < chairs + 1; i++) 
+   printf("thread count %d\n\n", threadCount);
+   for (i = 6; i < numOfSmokers + 6; i++)
    {
-      //      printf("SYSTEM: creating customer\n");
-      pthread_create(&threads[i], NULL, getHairCut, NULL);
+      printf("Creating smoker set\n");
+      pthread_create(&threads[i], NULL, smoker_A, NULL);
+      pthread_create(&threads[i], NULL, smoker_B, NULL);
+      pthread_create(&threads[i], NULL, smoker_C, NULL);
    }
+   pthread_create(&threads[0], NULL, administerA, NULL);
+   pthread_create(&threads[1], NULL, administerB, NULL);
+   pthread_create(&threads[2], NULL, administerC, NULL);
+   pthread_create(&threads[3], NULL, pusherA, NULL);
+   pthread_create(&threads[4], NULL, pusherB, NULL);
+   pthread_create(&threads[5], NULL, pusherC, NULL);
 
-
-   for (i = 0; i < chairs + 1; i++) 
+   for (i = 0; i < threadCount + 6; i++)
    {
       pthread_join(threads[i], NULL);
    }
@@ -108,99 +117,252 @@ int main(int argc, char** argv)
    return 0;
 }
 
-void *administerA() {
-   sem_wait(&agentSem);
-   sem_post(&tabacco);
-   sem_post(&paper);
-}
-void *administerB() {
-   sem_wait(&agentSem);
-   sem_post(&paper);
-   sem_post(&match);
-}
-void *administerC() {
-   sem_wait(&agentSem);
-   sem_post(&tabacco);
-   sem_post(&match);
-}
-
-void *smoke() {
-
-
-}
-
-void *pusher() {
-   sem_wait(&tabacco);
-   sem_wait(&mutex);
-   if (isPaper) {
-      isPaper = false;
-      sem_post(&matchSem);
-   }
-
-   else if (isMatch) {
-      isMatch = false;
-      sem
-
-
-// Executed by the barber
-void *cutHair() {
-   int hairCutTime = 5;
-
-   while(1) 
+void *administerA()
+{
+   while (1)
    {
-      printf("BARBER: Waiting for customer\n");
-      sem_wait(&customer);
-      sem_post(&barber);
-      printf("BARBER: Starting haircuit (%d seconds)\n", hairCutTime);
-
-      sleep(hairCutTime);
-
-      printf("BARBER: Hair cut done\n");
-
-      printf("BARBER: waiting on customer done mutex\n");
-      sem_wait(&customerDone); 
-      sem_post(&barberDone);
-      printf("BARBER: BarberDone mutex is done\n");
+#ifdef DEBUG
+      printf("ADMIN_A: waiting on agent\n");
+#endif
+      sem_wait(&agentSem);
+#ifdef DEBUG
+      printf("ADMIN_A:\t\tPosting tobacco\n");
+#endif
+      sem_post(&tobacco);
+#ifdef DEBUG
+      printf("ADMIN_A:\t\tPosting paper\n");
+#endif
+      sem_post(&paper);
    }
 }
 
-void *getHairCut() {
-   int walkTime = 0; // Time before the custome comes into the store
-   while(1) {
-      sleep((rand() % 19) + 1);
-      printf("CUSTOMER: Customer enter shop\n");
-      sem_wait(&mutex);
-      if (customers == chairs) {
-         sem_post(&mutex);
-         printf("CUSTOMER: balking\n");
-         balk();
-      }
-      else if (customers == 0) {
-         printf("CUSTOMER: Waking up the barber\n");
-      }
-
-      customers++;
-      sem_post(&mutex);
-
-      sem_post(&customer);
-      printf("CUSTOMER: Waiting on a hair cut\n");
-      sem_wait(&barber);
-      printf("CUSTOMER: getting hair cut\n");
-      sleep(5); // Wait for hair to be cut
-      printf("CUSTOMER: Hair cut is done\n");
-      sem_post(&customerDone);
-      sem_wait(&barberDone);
-
-      sem_wait(&mutex);
-      customers--;
-      sem_post(&mutex);
-
-      printf("CUSTOMER: Customer left shop\n");
+void *administerB()
+{
+   while (1)
+   {
+#ifdef DEBUG
+      printf("ADMIN_B: waiting on agent\n");
+#endif
+      sem_wait(&agentSem);
+#ifdef DEBUG
+      printf("ADMIN_B:\t\tPosting paper\n");
+#endif
+      sem_post(&paper);
+#ifdef DEBUG
+      printf("ADMIN_B:\t\tPosting match\n");
+#endif
+      sem_post(&match);
    }
 }
 
-void balk() { 
-   int r;
-   while(r)
-   { r = 4; }
+void *administerC()
+{
+   while (1)
+   {
+#ifdef DEBUG
+      printf("ADMIN_C: waiting on agent\n");
+#endif
+      sem_wait(&agentSem);
+#ifdef DEBUG
+      printf("ADMIN_C:\t\tPosting tobacco\n");
+#endif
+      sem_post(&tobacco);
+#ifdef DEBUG
+      printf("ADMIN_C:\t\tPosting match\n");
+#endif
+      sem_post(&match);
+   }
+}
+
+/* Smoker with tobacco */
+void *smoker_A()
+{
+   while (1)
+   {
+      printf("SMOKER_A: waiting on tobacco\n");
+      sem_wait(&tobaccoSem);
+      printf("SMOKER_A: Rolling a cig\n");
+      sleep(3); //makeCigarette();
+      sem_post(&agentSem);
+      printf("SMOKER_A: Smoking the cig\n");
+      sleep(10);
+   }
+}
+
+/* Smoker with paper */
+void *smoker_B()
+{
+   while (1)
+   {
+      printf("SMOKER_B: waiting on paper\n");
+      sem_wait(&paperSem);
+      printf("SMOKER_B: Rolling a cig\n");
+      sleep(3); //makeCigarette();
+      sem_post(&agentSem);
+      printf("SMOKER_B: Smoking the cig\n");
+      sleep(10);
+   }
+}
+
+/* Smoker with matches */
+void *smoker_C()
+{
+   while (1)
+   {
+      printf("SMOKER_C: waiting on tobacco\n");
+      sem_wait(&matchSem);
+      printf("SMOKER_C: Rolling a cig\n");
+      sleep(3); //makeCigarette();
+      sem_post(&agentSem);
+      printf("SMOKER_C: Smoking the cig\n");
+      sleep(10);
+   }
+}
+
+void *pusherA()
+{
+   while (1)
+   {
+#ifdef DEBUG
+      printf("PUSHER_A: Waiting on tobacco\n");
+#endif
+      sem_wait(&tobacco);
+      sem_wait(&mutex);
+      if (numPaper)
+      {
+         numPaper--;
+         sem_post(&matchSem);
+      }
+
+      else if (numMatch)
+      {
+         numMatch--;
+         sem_post(&paperSem);
+      }
+
+      else
+      {
+         numTobacco++;
+      }
+      sem_post(&mutex);
+   }
+}
+
+void *pusherB()
+{
+   while (1)
+   {
+#ifdef DEBUG
+      printf("PUSHER_B: Waiting on paper\n");
+#endif
+      sem_wait(&paper);
+      #ifdef DEBUG
+      printf("PUSHER_B: Waiting on MUTEX\n");
+#endif
+      sem_wait(&mutex);
+      if (numTobacco)
+      {
+         numTobacco--;
+         #ifdef DEBUG
+      printf("PUSHER_B:\t\tPosting matchSem\n");
+#endif
+         sem_post(&matchSem);
+      }
+
+      else if (numMatch)
+      {
+         numMatch--;
+         #ifdef DEBUG
+      printf("PUSHER_B:\t\tPosting tobaccoSem\n");
+#endif
+         sem_post(&tobaccoSem);
+      }
+
+      else
+      {
+         numPaper++;
+      }
+      sem_post(&mutex);
+   }
+}
+
+void *pusherC()
+{
+   while (1)
+   {
+#ifdef DEBUG
+      printf("PUSHER_C: Waiting on match\n");
+#endif
+      sem_wait(&match);
+      sem_wait(&mutex);
+      if (numPaper)
+      {
+         numPaper--;
+         sem_post(&tobaccoSem);
+      }
+
+      else if (numTobacco)
+      {
+         numTobacco--;
+         sem_post(&paperSem);
+      }
+
+      else
+      {
+         numTobacco++;
+      }
+      sem_post(&mutex);
+   }
+}
+
+void initalizeSemaphores()
+{
+
+   if (sem_init(&mutex, 0, 1) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&agentSem, 0, 1) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&tobacco, 0, 1) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&paper, 0, 0) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&match, 0, 0) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&tobaccoSem, 0, 0) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&paperSem, 0, 0) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
+
+   if (sem_init(&matchSem, 0, 0) == -1)
+   {
+      printf("Error\n");
+      exit(1);
+   }
 }
